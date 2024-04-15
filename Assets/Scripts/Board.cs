@@ -29,10 +29,12 @@ public class Board : MonoBehaviour
   public int height;
   public int offSet;
   public GameObject tilePrefab;
+  public GameObject breakableTilePrefab;
   public GameObject[] dots;
   public GameObject destroyEffect;
   public TileType[] boardLayout;
   private bool[,] blankSpaces;
+  private BackgroundTile[,] breakableTiles;
   public GameObject[,] allDots;
   public Dot currentDot;
   private FindMatches findMatches;
@@ -40,6 +42,7 @@ public class Board : MonoBehaviour
   // Start is called before the first frame update
   void Start()
   {
+    breakableTiles = new BackgroundTile[width, height];
     findMatches = FindObjectOfType<FindMatches>();
     blankSpaces = new bool[width, height];
     allDots = new GameObject[width, height];
@@ -56,9 +59,27 @@ public class Board : MonoBehaviour
     }
   }
 
+  public void GenerateBreakableTiles()
+  {
+    //Look at all the tiles in the layout
+    for (int i = 0; i < boardLayout.Length; i++)
+    {
+      //if a tile is a jelly tile
+      if (boardLayout[i].tileKind == TileKind.Breakable)
+      {
+        //Create a jelly tile at that position
+        Vector2 tempPosition = new Vector2(boardLayout[i].x, boardLayout[i].y);
+        GameObject tile = Instantiate(breakableTilePrefab, tempPosition, Quaternion.identity);
+        breakableTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
+      }
+    }
+  }
+
+
   private void SetUp()
   {
     GenerateBlankSpaces();
+    GenerateBreakableTiles();
     for (int i = 0; i < width; i++)
     {
       for (int j = 0; j < height; j++)
@@ -242,6 +263,16 @@ public class Board : MonoBehaviour
       {
         CheckToMakeBombs();
       }
+      //Does a tile need to break? 
+      if (breakableTiles[column, row] != null)
+      {
+        //if it does, give 1 damage
+        breakableTiles[column, row].TakeDamage(1);
+        if (breakableTiles[column, row].hitPoints <= 0)
+        {
+          breakableTiles[column, row] = null;
+        }
+      }
 
       GameObject particle = Instantiate(destroyEffect, allDots[column, row].transform.position, Quaternion.identity);
       Destroy(particle, .5f);
@@ -265,19 +296,25 @@ public class Board : MonoBehaviour
     findMatches.currentMatches.Clear();
     StartCoroutine(DecreaseRowCo2());
   }
-  private IEnumerator DecreaseRowCo2(){
-    for(int i = 0; i < width; i ++){
-      for(int j = 0; j < height; j ++){
+  private IEnumerator DecreaseRowCo2()
+  {
+    for (int i = 0; i < width; i++)
+    {
+      for (int j = 0; j < height; j++)
+      {
         //if the current spot isnt blank and is empty 
-        if(!blankSpaces[i, j] && allDots[i, j] == null){
+        if (!blankSpaces[i, j] && allDots[i, j] == null)
+        {
           //loop from the space above to the top of the column
-          for(int k = j + 1; k < height; k ++){
+          for (int k = j + 1; k < height; k++)
+          {
             //if a dot is found
-            if(allDots[i, k] != null){
+            if (allDots[i, k] != null)
+            {
               //move that dot to this empty space
               allDots[i, k].GetComponent<Dot>().row = j;
               //set that spot to be null
-              allDots[i, k] = null; 
+              allDots[i, k] = null;
               //break out of the loop
               break;
             }
