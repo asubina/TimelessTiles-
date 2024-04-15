@@ -400,7 +400,99 @@ public class Board : MonoBehaviour
     currentDot = null;
 
     yield return new WaitForSeconds(.5f);
+
+    if(IsDeadLocked())
+    {
+      Debug.Log("Deadlocked!!");
+    }
     currentState = GameState.move;
   }
 
+  private void SwitchPieces(int column, int row, Vector2 direction)
+  {
+    //Take the second piece and save it in the holder
+    GameObject holder = allDots[column + (int)direction.x, row + (int)direction.y] as GameObject;
+    //switching the first dot to be the second position
+    allDots[column + (int)direction.x, row + (int)direction.y] = allDots[column, row];
+    //set the first dot to be the second dot
+    allDots[column, row] = holder;
+  }
+
+  private bool CheckForMatches()
+  {
+    for (int i = 0; i < width; i++)
+    {
+      for (int j = 0; j < height; j++){
+        if (allDots[i, j] != null)
+        {
+          //Make sure that one and two to the right are in the board
+          if (i < width - 2)
+          {
+            //Check if the dots to the right and two to the right exist 
+            if (allDots[i + 1, j] != null && allDots[i + 2, j] != null)
+            {
+              if (allDots[i + 1, j].tag == allDots[i, j].tag
+              && allDots[i + 2, j].tag == allDots[i, j].tag)
+              {
+                return true;
+              }
+            }
+          }
+          if (j < height - 2)
+          {
+            //Check if the dots above exist
+            if (allDots[i, j + 1] != null && allDots[i, j + 2] != null)
+            {
+              if (allDots[i, j + 1].tag == allDots[i, j].tag
+              && allDots[i, j + 2].tag == allDots[i, j].tag)
+              {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private bool SwitchAndCheck(int column, int row, Vector2 direction)
+  {
+    SwitchPieces(column, row, direction);
+    if (CheckForMatches())
+    {
+      SwitchPieces(column, row, direction);
+      return true;
+    }
+    SwitchPieces(column, row, direction);
+    return false;
+  }
+
+  private bool IsDeadLocked()
+  {
+    for (int i = 0; i < width; i++)
+    {
+      for (int j = 0; j < height; j++)
+      {
+        if (allDots[i, j] != null)
+        {
+          if (i < width - 2)
+          {
+            if (SwitchAndCheck(i, j, Vector2.right))
+            {
+              return false;
+            }
+          }
+          if (j < height - 2)
+          {
+            if (SwitchAndCheck(i, j, Vector2.up))
+            {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
 }
