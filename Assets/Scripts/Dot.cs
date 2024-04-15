@@ -194,7 +194,9 @@ public class Dot : MonoBehaviour
       column += (int)direction.x;
       row += (int)direction.y;
       StartCoroutine(CheckMoveCo());
-    }else{
+    }
+    else
+    {
       board.currentState = GameState.move;
     }
   }

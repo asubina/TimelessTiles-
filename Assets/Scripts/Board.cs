@@ -318,7 +318,7 @@ public class Board : MonoBehaviour
     {
       for (int j = 0; j < height; j++)
       {
-        if (allDots[i, j] == null && blankSpaces[i, j])
+        if (allDots[i, j] == null && !blankSpaces[i, j])
         {
           Vector2 tempPosition = new Vector2(i, j + offSet);
           int dotToUse = Random.Range(0, dots.Length);
