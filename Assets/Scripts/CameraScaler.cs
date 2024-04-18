@@ -14,7 +14,7 @@ public class CameraScaler : MonoBehaviour
     {
         board = FindObjectOfType<Board>();
         if(board != null){
-            RepositionCamera(board.width - 1, board.height - 1);
+            RepositionCamera(board.width - 1, board.height);
         }
     }
     void RepositionCamera(float x, float y){
