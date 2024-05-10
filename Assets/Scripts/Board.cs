@@ -5,7 +5,10 @@ using UnityEngine;
 public enum GameState
 {
   wait,
-  move
+  move, 
+  win, 
+  lose,
+  pause
 }
 
 public enum TileKind
@@ -24,31 +27,60 @@ public class TileType
 
 public class Board : MonoBehaviour
 {
-  public GameState currentState = GameState.move;
-  public int width;
-  public int height;
-  public int offSet;
-  public GameObject tilePrefab;
-  public GameObject breakableTilePrefab;
-  public GameObject[] dots;
-  public GameObject destroyEffect;
-  public TileType[] boardLayout;
-  private bool[,] blankSpaces;
-  private BackgroundTile[,] breakableTiles;
-  public GameObject[,] allDots;
-  public Dot currentDot;
-  private FindMatches findMatches;
-  public int basePieceValue = 20;
-  private int streakValue = 1;
-  private ScoreManager scoreManager;
-  private SoundManager soundManager;
-  public float refillDelay = 0.5f;
-  public int[] scoreGoals;
+    [Header("Scriptable Object Stuff")]
+    public World world;
+    public int level;
+
+    public GameState currentState = GameState.move;
+    [Header("Board Dimensions")]
+    public int width;
+    public int height;
+    public int offSet;
+
+    [Header("Prefabs")]
+    public GameObject tilePrefab;
+    public GameObject breakableTilePrefab;
+    public GameObject[] dots;
+    public GameObject destroyEffect;
+
+    [Header("Layout")]
+    public TileType[] boardLayout;
+    private bool[,] blankSpaces;
+    private BackgroundTile[,] breakableTiles;
+    public GameObject[,] allDots;
+    public Dot currentDot;
+    private FindMatches findMatches;
+    public int basePieceValue = 20;
+    private int streakValue = 1;
+    private ScoreManager scoreManager;
+    private SoundManager soundManager;
+    private GoalManager goalManager;
+    public float refillDelay = 0.5f;
+    public int[] scoreGoals;
+
+    private void Awake()
+    {
+        if(world != null)
+        {
+            if(level < world.levels.Length)
+            {
+                if (world.levels[level] != null)
+                {
+                    width = world.levels[level].width;
+                    height = world.levels[level].height;
+                    dots = world.levels[level].dots;
+                    scoreGoals = world.levels[level].scoreGoals;
+                    boardLayout = world.levels[level].boardLayout;
+                }
+            }
+        }
+    }
 
 
-  // Start is called before the first frame update
-  void Start()
+    // Start is called before the first frame update
+    void Start()
   {
+    goalManager = FindAnyObjectByType<GoalManager>();
     soundManager = FindObjectOfType<SoundManager>();
     scoreManager = FindObjectOfType<ScoreManager>();
     breakableTiles = new BackgroundTile[width, height];
@@ -56,6 +88,7 @@ public class Board : MonoBehaviour
     blankSpaces = new bool[width, height];
     allDots = new GameObject[width, height];
     SetUp();
+    currentState = GameState.pause;
   }
   public void GenerateBlankSpaces()
   {
@@ -85,43 +118,43 @@ public class Board : MonoBehaviour
   }
 
 
-  private void SetUp()
-  {
-    GenerateBlankSpaces();
-    GenerateBreakableTiles();
-    for (int i = 0; i < width; i++)
+    private void SetUp()
     {
-      for (int j = 0; j < height; j++)
-      {
-        if (!blankSpaces[i, j])
+        GenerateBlankSpaces();
+        GenerateBreakableTiles();
+        for (int i = 0; i < width; i++)
         {
-          Vector2 tempPosition = new Vector2(i, j + offSet);
-          GameObject BackgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity);
-          BackgroundTile.transform.parent = this.transform;
-          BackgroundTile.name = "(" + i + "," + j + ")";
-          int dotToUse = Random.Range(0, dots.Length);
-          int maxIterations = 0;
+            for (int j = 0; j < height; j++)
+            {
+                if (!blankSpaces[i, j])
+                {
+                    Vector2 tempPosition = new Vector2(i, j + offSet);
+                    GameObject BackgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity);
+                    BackgroundTile.transform.parent = this.transform;
+                    BackgroundTile.name = "(" + i + "," + j + ")";
+                    int dotToUse = Random.Range(0, dots.Length);
+                    int maxIterations = 0;
 
-          while (MatchesAt(i, j, dots[dotToUse]) && maxIterations < 100)
-          {
-            dotToUse = Random.Range(0, dots.Length);
-            maxIterations++;
-            Debug.Log(maxIterations);
-          }
-          maxIterations = 0;
+                    while (MatchesAt(i, j, dots[dotToUse]) && maxIterations < 100)
+                    {
+                        dotToUse = Random.Range(0, dots.Length);
+                        maxIterations++;
+                        //Debug.Log(maxIterations);
+                    }
+                    maxIterations = 0;
 
-          GameObject dot = Instantiate(dots[dotToUse], tempPosition, Quaternion.identity);
-          dot.GetComponent<Dot>().row = j;
-          dot.GetComponent<Dot>().column = i;
-          dot.transform.parent = this.transform;
-          dot.name = "(" + i + "," + j + ")";
-          allDots[i, j] = dot;
+                    GameObject dot = Instantiate(dots[dotToUse], tempPosition, Quaternion.identity);
+                    dot.GetComponent<Dot>().row = j;
+                    dot.GetComponent<Dot>().column = i;
+                    dot.transform.parent = this.transform;
+                    dot.name = "(" + i + "," + j + ")";
+                    allDots[i, j] = dot;
+                }
+            }
         }
-      }
     }
-  }
 
-  private bool MatchesAt(int column, int row, GameObject piece)
+    private bool MatchesAt(int column, int row, GameObject piece)
   {
     if (column > 1 && row > 1)
     {
@@ -282,6 +315,11 @@ public class Board : MonoBehaviour
           breakableTiles[column, row] = null;
         }
       }
+      if(goalManager != null)
+            {
+                goalManager.CompareGoal(allDots[column, row].tag.ToString());
+                goalManager.UpdateGoals();
+            }
       //Does the sound manager exist?
       if (soundManager != null)
       {
@@ -426,7 +464,7 @@ public class Board : MonoBehaviour
     if (IsDeadLocked())
     {
       ShuffleBoard();
-      Debug.Log("Deadlocked!!");
+      //Debug.Log("Deadlocked!!");
     }
     currentState = GameState.move;
     streakValue = 1;
@@ -553,7 +591,7 @@ public class Board : MonoBehaviour
           {
             pieceToUse = Random.Range(0, newBoard.Count);
             maxIterations++;
-            Debug.Log(maxIterations);
+            //Debug.Log(maxIterations);
           }
           //Make a container for the piece
           Dot piece = newBoard[pieceToUse].GetComponent<Dot>();
