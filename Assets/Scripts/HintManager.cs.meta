@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 53dfa19453e0ed2439d7cc392fb8ecd2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - hintParticle: {fileID: 4987286807867715958, guid: c0bae8ff4e15e674f917f7e7761bab55, type: 3}
+  - currentHint: {fileID: 4987286807867715958, guid: c0bae8ff4e15e674f917f7e7761bab55, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

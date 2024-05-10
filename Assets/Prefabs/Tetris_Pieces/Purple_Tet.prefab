@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 315065170899724190}
   - component: {fileID: 1948069909452028701}
   - component: {fileID: 7628273945314730381}
+  - component: {fileID: -3860628078331050268}
   m_Layer: 0
   m_Name: Purple_Tet
   m_TagString: Purple Dot
@@ -111,7 +112,52 @@ MonoBehaviour:
   isColumnBomb: 0
   isRowBomb: 0
   isAdjacentBomb: 0
-  adjacentMarker: {fileID: 0}
+  adjacentMarker: {fileID: 3525592181173976322, guid: 1804b0692f67de34ba1764ce3d522feb, type: 3}
   rowArrow: {fileID: 8428293348075326501, guid: 3a492c0b878ee4d409a42aa949c31686, type: 3}
   columnArrow: {fileID: 3757418477396053291, guid: b25a02fd10b4db645a0ae6cef7811eb7, type: 3}
-  colourBomb: {fileID: 0}
+  colourBomb: {fileID: 6712147770858075243, guid: 277a87a05152ad442a1692e99e7164c5, type: 3}
+--- !u!61 &-3860628078331050268
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18693205637503327}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.8, y: 0.8}
+    newSize: {x: 0.8, y: 0.8}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.8, y: 0.8}
+  m_EdgeRadius: 0
